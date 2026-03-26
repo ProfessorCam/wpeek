@@ -1,0 +1,28 @@
+#!/bin/bash
+# AppRun for wpeek — uses host system GTK4/GStreamer/PipeWire
+HERE="$(dirname "$(readlink -f "$0")")"
+
+# Use bundled ffmpeg if available
+if [ -x "${HERE}/usr/bin/ffmpeg" ]; then
+    export PATH="${HERE}/usr/bin:${PATH}"
+fi
+
+# Use bundled libraries (ffmpeg deps) if present
+if [ -d "${HERE}/usr/lib" ]; then
+    export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH:-}"
+fi
+
+# Ensure system Python can find our app
+export PYTHONPATH="${HERE}/usr/lib/wpeek:${PYTHONPATH:-}"
+
+# Ensure the desktop file is available for GNOME introspection
+# (copy to user's local applications if not already installed)
+DESKTOP_SRC="${HERE}/usr/share/applications/com.github.wpeek.desktop"
+DESKTOP_DST="${HOME}/.local/share/applications/com.github.wpeek.desktop"
+if [ -f "$DESKTOP_SRC" ] && [ ! -f "$DESKTOP_DST" ]; then
+    mkdir -p "$(dirname "$DESKTOP_DST")"
+    cp "$DESKTOP_SRC" "$DESKTOP_DST" 2>/dev/null || true
+    update-desktop-database "$(dirname "$DESKTOP_DST")" 2>/dev/null || true
+fi
+
+exec /usr/bin/python3 -m wpeek "$@"

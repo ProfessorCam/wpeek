@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=wpeek
+Comment=Screen area recorder for GNOME Wayland
+Exec=wpeek
+Icon=wpeek
+Terminal=false
+Type=Application
+Categories=AudioVideo;Video;Recorder;
+Keywords=screencast;recording;gif;video;
+StartupNotify=true
+X-GNOME-Introspect=true
+X-AppImage-Version=1.2.0

@@ -1,0 +1,6 @@
+#!/usr/bin/python3
+"""Launch wpeek."""
+import sys
+sys.path.insert(0, '/usr/lib/wpeek')
+from wpeek.__main__ import main
+sys.exit(main())
