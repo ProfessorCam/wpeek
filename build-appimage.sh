@@ -42,12 +42,14 @@ else
     FFMPEG_PATH=$(which ffmpeg 2>/dev/null || true)
     if [ -n "$FFMPEG_PATH" ]; then
         cp "$FFMPEG_PATH" "$APPDIR/usr/bin/ffmpeg"
-        # Copy ffmpeg's critical shared libraries
-        LINK_CMD="ldd"
-        for lib in $($LINK_CMD "$FFMPEG_PATH" 2>/dev/null | grep -oP '/\S+' | grep -v '^/lib.*/ld' || true); do
-            if [ -f "$lib" ]; then
-                libdir="$APPDIR/usr/lib/$(basename "$lib")"
-                [ -f "$libdir" ] || cp "$lib" "$APPDIR/usr/lib/" 2>/dev/null || true
+        # Copy ffmpeg's shared libraries, excluding core system libs that must
+        # always come from the host (bundling glibc causes symbol mismatches on
+        # distros with a different glibc version — e.g. the __tunable_is_initialized
+        # GLIBC_PRIVATE error seen on Debian).
+        EXCLUDE_PATTERN='/(libc|libc-[0-9]|libpthread|libm|libdl|librt|libnsl|libresolv|libutil|libnss_|libmvec|libmemusage|libpcprofile|ld-linux|ld-[0-9]|libGL|libGLX|libGLdispatch|libEGL|libvulkan)\.'
+        for lib in $(ldd "$FFMPEG_PATH" 2>/dev/null | grep -oP '/\S+' || true); do
+            if [ -f "$lib" ] && ! echo "$lib" | grep -qP "$EXCLUDE_PATTERN"; then
+                [ -f "$APPDIR/usr/lib/$(basename "$lib")" ] || cp "$lib" "$APPDIR/usr/lib/" 2>/dev/null || true
             fi
         done
         echo "  Bundled ffmpeg from $FFMPEG_PATH"

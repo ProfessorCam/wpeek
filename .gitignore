@@ -1,0 +1,7 @@
+build/appimage/
+build/wpeek_*/
+__pycache__/
+*.pyc
+*.pyo
+.claude/
+claude_notes.txt
